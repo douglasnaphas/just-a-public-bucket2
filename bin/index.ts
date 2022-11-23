@@ -70,12 +70,6 @@ const stackname = require("@cdk-turnkey/stackname");
   if (appProps.customProp) {
     // Validate the customProp, if provided
   }
-  console.log("bin: Instantiating stack with fromAddress:");
-  console.log(appProps.fromAddress);
-  console.log("and domainName:");
-  console.log(appProps.domainName);
-  console.log("and zoneId:");
-  console.log(appProps.zoneId);
   // TODO: print a hash of the IDP app secrets
   new AppStack(app, stackname("app"), {
     ...(appProps as AppStackProps),
