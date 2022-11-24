@@ -19,5 +19,8 @@ export class AppStack extends Stack {
     new CfnOutput(this, "BucketName", {
       value: bucket.bucketName,
     });
+    new CfnOutput(this, "BucketDomainName", {
+      value: bucket.bucketDomainName,
+    });
   }
 }
