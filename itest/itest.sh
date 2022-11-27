@@ -35,7 +35,7 @@ PRIVATE_STATUS=$( \
   curl --head --silent https://${BUCKET_DOMAIN}/${CONTENT_OBJECT_NAME} | \
   awk 'NR == 1 {print $2}'
 )
-EXPECTED_PRIVATE_STATUS="403"
+EXPECTED_PRIVATE_STATUS="404"
 if [[ "${PRIVATE_STATUS}" != "${EXPECTED_PRIVATE_STATUS}" ]]
 then
   echo "Integration test failed. Expected status from getting an object by URL in a private bucket:"
