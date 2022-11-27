@@ -48,13 +48,18 @@ fi
 # Public bucket with nothing blocking HTTP access, public insecure bucket (PIB)
 # Get PIB's name
 
+# Fail if there's a public access block on PIB
+
+
 # Confirm PIB's content is right
 
-# Get PIB's content URL
+# Get PIB's domain name
 
-# Confirm PIB's HTTPS URL does work
+# Confirm PIB's HTTPS content URL does work
 
-# Confirm PIB's HTTPS URL does work
+# Confirm PIB's HTTPS content URL does work
 
 # Public bucket with IAM policy set to deny HTTP, Public Secure Bucket (PSB)
 # Get PSB's name
+
+# Fail if there's a public access block on PSB
