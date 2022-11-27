@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-STACKNAME=$(npx @cdk-turnkey/stackname@1.1.0 --suffix app)
+STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix app)
 BUCKET_NAME=$(aws cloudformation describe-stacks \
   --stack-name ${STACKNAME} | \
   jq '.Stacks[0].Outputs | map(select(.OutputKey == "BucketName"))[0].OutputValue' | \
