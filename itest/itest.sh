@@ -5,10 +5,14 @@ CONTENT_OBJECT_NAME=content.json
 
 # Get non-public bucket's name
 STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix app)
-BUCKET_NAME=$(aws cloudformation describe-stacks \
+cfn_output () {
+  output_key=$1
+  $(aws cloudformation describe-stacks \
   --stack-name ${STACKNAME} | \
-  jq '.Stacks[0].Outputs | map(select(.OutputKey == "BucketName"))[0].OutputValue' | \
+  jq --arg output_key $output_key '.Stacks[0].Outputs | map(select(.OutputKey == $output_key))[0].OutputValue' | \
   tr -d \")
+}
+BUCKET_NAME=$(cfn_output "BucketName")
 
 # Confirm content is right
 CONTENT_DATA="$(aws s3 cp s3://${BUCKET_NAME}/${CONTENT_OBJECT_NAME} - | \
