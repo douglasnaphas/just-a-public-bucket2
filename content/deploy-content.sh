@@ -9,6 +9,7 @@ do
     --stack-name ${STACKNAME} | \
     jq '.Stacks[0].Outputs | map(select(.OutputKey == "${k}"))[0].OutputValue' | \
     tr -d \")
+  echo "BUCKET_NAME: ${BUCKET_NAME}"
   aws s3 sync \
     --content-type "application/json" \
     --delete \
