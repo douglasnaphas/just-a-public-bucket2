@@ -16,11 +16,29 @@ export class AppStack extends Stack {
       ...defaultBucketProps,
       versioned: true,
     });
-    new CfnOutput(this, "BucketName", {
-      value: bucket.bucketName,
-    });
-    new CfnOutput(this, "BucketDomainName", {
-      value: bucket.bucketDomainName,
-    });
+    const makeBucketOutputs = (bkt: s3.Bucket, logicalId: string) => {
+      new CfnOutput(this, `${logicalId}Name`, {
+        value: bkt.bucketName
+      });
+      new CfnOutput(this, `${logicalId}DomainName`, {
+        value: bkt.bucketDomainName
+      })
+    }
+    makeBucketOutputs(bucket, "Bucket");
+
+    const publicInsecureBucket = new s3.Bucket(this, "PublicInsecureBucket", {
+      ...defaultBucketProps,
+      versioned: true,
+      publicReadAccess: true
+    })
+    makeBucketOutputs(publicInsecureBucket, "PublicInsecureBucket");
+
+    const publicSecureBucket = new s3.Bucket(this, "PublicSecureBucket", {
+      ...defaultBucketProps,
+      versioned: true,
+      publicReadAccess: true,
+      enforceSSL: true
+    })
+    makeBucketOutputs(publicSecureBucket, "PublicSecureBucket")
   }
 }
