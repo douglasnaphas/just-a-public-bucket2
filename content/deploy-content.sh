@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix app)
+echo "STACKNAME: ${STACKNAME}"
 mkdir -p deploy
 cp *.json deploy/
 for k in BucketName PublicSecureBucketName PublicInsecureBucketName
