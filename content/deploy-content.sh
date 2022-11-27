@@ -6,6 +6,7 @@ mkdir -p deploy
 cp *.json deploy/
 for k in BucketName PublicSecureBucketName PublicInsecureBucketName
 do
+  echo "k: ${k}"
   BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name ${STACKNAME} | \
     jq '.Stacks[0].Outputs | map(select(.OutputKey == "${k}"))[0].OutputValue' | \
