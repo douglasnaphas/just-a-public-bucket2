@@ -27,7 +27,7 @@ correct_content () {
   fi
   return 0
 }
-if [[ ! correct_content ${BUCKET_NAME} ]]
+if ! correct_content ${BUCKET_NAME}
 then
   echo "Integration test failed. Expected ${BUCKET_NAME} content data:"
   echo "${EXPECTED_DATA}"
@@ -39,20 +39,19 @@ fi
 # Get bucket's domain name
 BUCKET_DOMAIN=$(cfn_output "BucketDomainName")
 
-# Confirm bucket's HTTPS URL doesn't work
-PRIVATE_STATUS=$( \
-  curl --head --silent https://${BUCKET_DOMAIN}/${CONTENT_OBJECT_NAME} | \
-  awk 'NR == 1 {print $2}'
-)
-EXPECTED_PRIVATE_STATUS="403"
-if [[ "${PRIVATE_STATUS}" != "${EXPECTED_PRIVATE_STATUS}" ]]
-then
-  echo "Integration test failed. Expected status from getting an object by URL in a private bucket:"
-  echo "${EXPECTED_PRIVATE_STATUS}"
-  echo "Got:"
-  echo "${PRIVATE_STATUS}"
-  exit 3
-fi
+# Confirm private bucket's HTTPS URL doesn't work
+assert_status () {
+  local url=$1
+  local expected_status=$2
+  local status=$(curl --head --silent ${url} | awk 'NR == 1 {print $2}')
+  if [[ "${status}" != "${expected_status}" ]]
+  then
+    echo -n "expected status of ${expected_status} for ${url}, got ${status}, "
+    echo "failing"
+    exit 5
+  fi
+}
+assert_status https://${BUCKET_DOMAIN}/${CONTENT_OBJECT_NAME} 403
 
 block_exists () {
   local bucket=$1
@@ -75,8 +74,7 @@ fi
 
 # Public bucket with nothing blocking HTTP access, public insecure bucket (PIB)
 # Get PIB's name
-PIB_NAME_OUTPUT_KEY="PublicInsecureBucketName"
-PIB_NAME=$(cfn_output "${PIB_NAME_OUTPUT_KEY}")
+PIB_NAME=$(cfn_output "PublicInsecureBucketName")
 
 # Fail if there's a public access block on PIB
 if block_exists ${PIB_NAME}
@@ -87,7 +85,7 @@ then
 fi
 
 # Confirm PIB's content is right
-if [[ ! correct_content ${PIB_NAME} ]]
+if ! correct_content ${PIB_NAME}
 then
   echo "Integration test failed. Expected ${PIB_NAME} content data:"
   echo "${EXPECTED_DATA}"
@@ -97,20 +95,41 @@ then
 fi
 
 # Get PIB's domain name
+PIB_DOMAIN_NAME=$(cfn_output "PublicInsecureBucketDomainName")
 
 # Confirm PIB's HTTPS content URL does work
+assert_status https://${PIB_DOMAIN_NAME}/${CONTENT_OBJECT_NAME} 200
 
 # Confirm PIB's HTTPS content URL does work
+assert_status http://${PIB_DOMAIN_NAME}/${CONTENT_OBJECT_NAME} 200
 
 # Public bucket with IAM policy set to deny HTTP, Public Secure Bucket (PSB)
 # Get PSB's name
+PSB_NAME=$(cfn_output "PublicSecureBucketName")
 
 # Fail if there's a public access block on PSB
+if block_exists ${PSB_NAME}
+then
+  echo "public access block exists on ${PSB_NAME}"
+  echo "${PSB_NAME} needs to be a public bucket, failing"
+  exit 6
+fi
 
 # Confirm PSB's content is right
+if ! correct_content ${PSB_NAME}
+then
+  echo "Integration test failed. Expected ${PSB_NAME} content data:"
+  echo "${EXPECTED_DATA}"
+  echo "Got:"
+  echo "${CONTENT_DATA}"
+  exit 7
+fi
 
 # Get PSB's domain name
+PSB_DOMAIN_NAME=$(cfn_output "PublicSecureBucketDomainName")
 
 # Confirm PSB's HTTPS content URL does work
+assert_status https://${PSB_DOMAIN_NAME}/${CONTENT_OBJECT_NAME} 200
 
 # Confirm PSB's HTTP content URL does NOT work
+assert_status http://${PSB_DOMAIN_NAME}/${CONTENT_OBJECT_NAME} 403
