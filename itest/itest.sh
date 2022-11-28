@@ -69,7 +69,8 @@ fi
 # Public bucket with nothing blocking HTTP access, public insecure bucket (PIB)
 # Get PIB's name
 PIB_ID="PublicInsecureBucket"
-PIB_NAME=$(cfn_output ${PIB_ID})
+PIB_NAME=$(cfn_output "${PIB_ID}")
+echo "PIB_NAME: ${PIB_NAME}"
 
 # Fail if there's a public access block on PIB
 if block_exists ${PIB_NAME}
