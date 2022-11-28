@@ -13,7 +13,6 @@ cfn_output () {
   tr -d \"
 }
 BUCKET_NAME=$(cfn_output "BucketName")
-echo "BUCKET_NAME: ${BUCKET_NAME}"
 
 # Confirm content is right
 CONTENT_DATA="$(aws s3 cp s3://${BUCKET_NAME}/${CONTENT_OBJECT_NAME} - | \
@@ -51,8 +50,6 @@ block_exists () {
   local bucket=$1
   NO_BLOCK_EXISTS="no-block-exists"
   local block_status=$(aws s3api get-public-access-block --bucket ${bucket} &> /dev/null || echo ${NO_BLOCK_EXISTS})
-  echo "block_status: ${block_status}"
-  echo "NO_BLOCK_EXISTS: ${NO_BLOCK_EXISTS}"
   if [[ "${block_status}" != "${NO_BLOCK_EXISTS}" ]]
   then
     return 0
@@ -72,7 +69,6 @@ fi
 # Get PIB's name
 PIB_NAME_OUTPUT_KEY="PublicInsecureBucketName"
 PIB_NAME=$(cfn_output "${PIB_NAME_OUTPUT_KEY}")
-echo "PIB_NAME: ${PIB_NAME}"
 
 # Fail if there's a public access block on PIB
 if block_exists ${PIB_NAME}
