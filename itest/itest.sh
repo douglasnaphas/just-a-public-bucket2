@@ -15,13 +15,21 @@ cfn_output () {
 BUCKET_NAME=$(cfn_output "BucketName")
 
 # Confirm content is right
-CONTENT_DATA="$(aws s3 cp s3://${BUCKET_NAME}/${CONTENT_OBJECT_NAME} - | \
-  jq '.Data' | \
-  tr -d \")"
-EXPECTED_DATA="Something"
-if [[ "${CONTENT_DATA}" != "${EXPECTED_DATA}" ]]
+correct_content () {
+  local bucket=$1
+  local content_data="$(aws s3 cp s3://${bucket}/${CONTENT_OBJECT_NAME} - | \
+    jq '.Data' | \
+    tr -d \")"
+  local EXPECTED_DATA="Something"
+  if [[ "${content_data}" != "${EXPECTED_DATA}" ]]
+  then
+    return 1
+  fi
+  return 0
+}
+if [[ ! correct_content ${BUCKET_NAME} ]]
 then
-  echo "Integration test failed. Expected content data:"
+  echo "Integration test failed. Expected ${BUCKET_NAME} content data:"
   echo "${EXPECTED_DATA}"
   echo "Got:"
   echo "${CONTENT_DATA}"
@@ -43,7 +51,7 @@ then
   echo "${EXPECTED_PRIVATE_STATUS}"
   echo "Got:"
   echo "${PRIVATE_STATUS}"
-  exit 2
+  exit 3
 fi
 
 block_exists () {
@@ -73,12 +81,20 @@ PIB_NAME=$(cfn_output "${PIB_NAME_OUTPUT_KEY}")
 # Fail if there's a public access block on PIB
 if block_exists ${PIB_NAME}
 then
-  echo "block exists on ${PIB_NAME}"
-else
-  echo "no block exists on ${PIB_NAME}"
+  echo "public access block exists on ${PIB_NAME}"
+  echo "${PIB_NAME} needs to be a public bucket, failing"
+  exit 3
 fi
 
 # Confirm PIB's content is right
+if [[ ! correct_content ${PIB_NAME} ]]
+then
+  echo "Integration test failed. Expected ${PIB_NAME} content data:"
+  echo "${EXPECTED_DATA}"
+  echo "Got:"
+  echo "${CONTENT_DATA}"
+  exit 4
+fi
 
 # Get PIB's domain name
 
@@ -90,3 +106,11 @@ fi
 # Get PSB's name
 
 # Fail if there's a public access block on PSB
+
+# Confirm PSB's content is right
+
+# Get PSB's domain name
+
+# Confirm PSB's HTTPS content URL does work
+
+# Confirm PSB's HTTP content URL does NOT work
