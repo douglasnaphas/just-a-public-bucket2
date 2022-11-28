@@ -46,16 +46,25 @@ then
   exit 2
 fi
 
-NO_BLOCK_EXISTS="no-block-exists"
-BUCKET_BLOCK_STATUS=
-BUCKET_BLOCK_STATUS=$(aws s3api get-public-access-block --bucket ${BUCKET_NAME} &> /dev/null || echo ${NO_BLOCK_EXISTS})
-if [[ "${BUCKET_BLOCK_STATUS}" != "${NO_BLOCK_EXISTS}" ]]
+block_exists () {
+  bucket=$1
+  NO_BLOCK_EXISTS="no-block-exists"
+  BLOCK_STATUS=
+  BLOCK_STATUS=$(aws s3api get-public-access-block --bucket ${bucket} &> / dev/null || echo ${NO_BLOCK_EXISTS})
+  if [[ "${BUCKET_BLOCK_STATUS}" != "${NO_BLOCK_EXISTS}" ]]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+if block_exists ${BUCKET_NAME}
 then
   echo "block exists on ${BUCKET_NAME}"
 else
-  echo "block does not exist on ${BUCKET_NAME}"
+  echo "no block exists on ${BUCKET_NAME}"
 fi
-
 
 # Public bucket with nothing blocking HTTP access, public insecure bucket (PIB)
 # Get PIB's name
@@ -63,7 +72,12 @@ PIB_ID="PublicInsecureBucket"
 PIB_NAME=$(cfn_output ${PIB_ID})
 
 # Fail if there's a public access block on PIB
-PIB_BLOCK_STATUS=
+if block_exists ${PIB_NAME}
+then
+  echo "block exists on ${PIB_NAME}"
+else
+  echo "no block exists on ${PIB_NAME}"
+fi
 
 # Confirm PIB's content is right
 
