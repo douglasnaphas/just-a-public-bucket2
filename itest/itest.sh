@@ -49,9 +49,9 @@ fi
 block_exists () {
   bucket=$1
   NO_BLOCK_EXISTS="no-block-exists"
-  BLOCK_STATUS=
-  BLOCK_STATUS=$(aws s3api get-public-access-block --bucket ${bucket} &> / dev/null || echo ${NO_BLOCK_EXISTS})
-  if [[ "${BUCKET_BLOCK_STATUS}" != "${NO_BLOCK_EXISTS}" ]]
+  block_status=
+  block_status=$(aws s3api get-public-access-block --bucket ${bucket} &> / dev/null || echo ${NO_BLOCK_EXISTS})
+  if [[ "${block_status}" != "${NO_BLOCK_EXISTS}" ]]
   then
     return 0
   else
