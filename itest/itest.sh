@@ -29,10 +29,7 @@ then
 fi
 
 # Get bucket's domain name
-BUCKET_DOMAIN=$(aws cloudformation describe-stacks \
-  --stack-name ${STACKNAME} | \
-  jq '.Stacks[0].Outputs | map(select(.OutputKey == "BucketDomainName"))[0].OutputValue' | \
-  tr -d \")
+BUCKET_DOMAIN=$(cfn_output "BucketDomainName")
 
 # Confirm bucket's HTTPS URL doesn't work
 PRIVATE_STATUS=$( \
@@ -49,11 +46,24 @@ then
   exit 2
 fi
 
+NO_BLOCK_EXISTS="no-block-exists"
+BUCKET_BLOCK_STATUS=
+BUCKET_BLOCK_STATUS=$(aws s3api get-public-access-block --bucket ${BUCKET_NAME} &> /dev/null || echo ${NO_BLOCK_EXISTS})
+if [[ "${BUCKET_BLOCK_STATUS}" != "${NO_BLOCK_EXISTS}" ]]
+then
+  echo "block exists on ${BUCKET_NAME}"
+else
+  echo "block does not exist on ${BUCKET_NAME}"
+fi
+
+
 # Public bucket with nothing blocking HTTP access, public insecure bucket (PIB)
 # Get PIB's name
+PIB_ID="PublicInsecureBucket"
+PIB_NAME=$(cfn_output ${PIB_ID})
 
 # Fail if there's a public access block on PIB
-
+PIB_BLOCK_STATUS=
 
 # Confirm PIB's content is right
 
