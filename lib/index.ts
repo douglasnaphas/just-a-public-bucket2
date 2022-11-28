@@ -15,6 +15,7 @@ export class AppStack extends Stack {
     const bucket = new s3.Bucket(this, "Bucket", {
       ...defaultBucketProps,
       versioned: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL
     });
     const makeBucketOutputs = (bkt: s3.Bucket, logicalId: string) => {
       new CfnOutput(this, `${logicalId}Name`, {
