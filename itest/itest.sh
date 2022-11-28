@@ -6,7 +6,7 @@ CONTENT_OBJECT_NAME=content.json
 # Get non-public bucket's name
 STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix app)
 cfn_output () {
-  output_key=$1
+  local output_key=$1
   aws cloudformation describe-stacks \
   --stack-name ${STACKNAME} | \
   jq --arg output_key $output_key '.Stacks[0].Outputs | map(select(.OutputKey == $output_key))[0].OutputValue' | \
@@ -48,10 +48,9 @@ then
 fi
 
 block_exists () {
-  bucket=$1
+  local bucket=$1
   NO_BLOCK_EXISTS="no-block-exists"
-  block_status=
-  block_status=$(aws s3api get-public-access-block --bucket ${bucket} &> /dev/null || echo ${NO_BLOCK_EXISTS})
+  local block_status=$(aws s3api get-public-access-block --bucket ${bucket} &> /dev/null || echo ${NO_BLOCK_EXISTS})
   echo "block_status: ${block_status}"
   echo "NO_BLOCK_EXISTS: ${NO_BLOCK_EXISTS}"
   if [[ "${block_status}" != "${NO_BLOCK_EXISTS}" ]]
